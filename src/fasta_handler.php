@@ -17,30 +17,37 @@ class FASTA_Handler {
     public $b_store_labels = false;
     public $b_split_string = false;
     protected $fp;
+    protected $separator;
 
 
     /**
      * Initialize class with a file pointer
      *
-     * @param resource $fp A file pointer to a file in FASTA format
+     * @param resource $fp        A file pointer to a file in FASTA format
+     * @param string   $separator A character separating labels and sequences
      *
      * @return void
      */
-    public function __construct($fp) {
+    public function __construct($fp, $separator = '>') {
         $this->fp = $fp;
+        $this->separator = $separator;
         $this->output = array();
     }
 
 
     /**
-     * Function to set b_split_string and generate output by calling read()
+     * Function to set format variables and generate output by calling read()
+     *
+     * @param bool $b_split_string Returns a string if false and an array if true
+     * @param bool $b_store_labels Store sequence labels if true
      *
      * @return array|string output parsed by read()
      */
-    public function get_output($b_split_string = false) {
+    public function get_output($b_split_string = false, $b_store_labels = false) {
         $this->b_split_string = $b_split_string;
+        $this->b_store_labels = $b_store_labels;
         $this->read();
-        return $this->output();
+        return $this->output;
     }
 
 
@@ -52,7 +59,7 @@ class FASTA_Handler {
      */
     private function read() {
         // Get rid of the leading > for the first label
-        assert(fgetc($this->fp) === '>');
+        assert(fgetc($this->fp) === $this->separator);
         // Get (the rest of) the line as a label
         while (($line = fgets($this->fp)) !== false) {
             if ($this->b_store_labels) {
@@ -61,7 +68,7 @@ class FASTA_Handler {
             $c = '';
             $current_string = '';
             // Get the sequence character by character, discarding whitespace
-            while ('>' !== ($c = fgetc($this->fp)) && !feof($this->fp)) {
+            while ($this->separator !== ($c = fgetc($this->fp)) && !feof($this->fp)) {
                 if (!ctype_space($c)) {
                     $current_string .= $c;
                 }
