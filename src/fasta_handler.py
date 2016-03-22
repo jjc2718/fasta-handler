@@ -1,5 +1,4 @@
 import sys
-import itertools
 
 class FASTA_Handler:
     """ A simple, lightweight FASTA file parser """
